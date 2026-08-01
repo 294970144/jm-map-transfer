@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>JourneyMap 地图数据转移工具</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/pixel-theme.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/animations.css">
+</head>
+<body>
+  <!-- Floating background particles -->
+  <div class="bg-particles" id="bgParticles"></div>
+
+  <!-- Main container -->
+  <div class="main-container">
+    <!-- Header -->
+    <header class="pixel-header">
+      <div class="header-logo">
+        <div class="block-icon block-grass"></div>
+        <h1 class="pixel-title">JourneyMap</h1>
+        <div class="block-icon block-dirt"></div>
+      </div>
+      <p class="pixel-subtitle">地图数据转移工具 | Map Data Transfer</p>
+    </header>
+
+    <!-- Step indicator -->
+    <div class="step-indicator" id="stepIndicator">
+      <div class="step-item active" data-step="1">
+        <div class="step-number">1</div>
+        <span class="step-label">检测启动器</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" data-step="2">
+        <div class="step-number">2</div>
+        <span class="step-label">选择客户端</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" data-step="3">
+        <div class="step-number">3</div>
+        <span class="step-label">选择源数据</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step-item" data-step="4">
+        <div class="step-number">4</div>
+        <span class="step-label">执行转移</span>
+      </div>
+    </div>
+
+    <!-- Step 1: PCL2 Detection -->
+    <section class="step-section active" id="step1">
+      <div class="section-card">
+        <h2 class="section-title">
+          <span class="title-icon">[+]</span> 检测 PCL2 启动器
+        </h2>
+        <div class="detect-status" id="detectStatus">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">正在检测 PCL2 启动器...</p>
+        </div>
+        <div class="detect-info" id="detectInfo" style="display:none;">
+          <!-- Populated by JS -->
+        </div>
+        <div class="manual-input-group" id="manualInputGroup" style="display:none;">
+          <label class="pixel-label">手动输入 PCL2 路径:</label>
+          <div class="input-row">
+            <input type="text" class="pixel-input" id="pcl2RootInput" placeholder="E:\mc\pcl2">
+            <button class="pixel-btn pixel-btn-green" id="manualDetectBtn">检测</button>
+          </div>
+        </div>
+        <div class="step-actions">
+          <button class="pixel-btn pixel-btn-green" id="step1Next" disabled>下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2: Select Folder + Version -->
+    <section class="step-section" id="step2">
+      <div class="section-card">
+        <h2 class="section-title">
+          <span class="title-icon">[+]</span> 选择客户端
+        </h2>
+        <p class="section-hint">先选择文件夹，再选择该文件夹下的游戏版本</p>
+
+        <!-- Layer 1: Folder selection -->
+        <div class="layer-section">
+          <h3 class="layer-title">
+            <span class="layer-badge">1</span> 选择文件夹
+          </h3>
+          <div class="card-grid" id="folderGrid">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+
+        <!-- Layer 2: Version selection -->
+        <div class="layer-section" id="versionLayer" style="display:none;">
+          <h3 class="layer-title">
+            <span class="layer-badge">2</span> 选择版本
+          </h3>
+          <div class="card-grid" id="versionGrid"></div>
+        </div>
+
+        <div class="step-actions">
+          <button class="pixel-btn pixel-btn-stone" id="step2Back">上一步</button>
+          <button class="pixel-btn pixel-btn-green" id="step2Next" disabled>下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 3: Select Source Server Data -->
+    <section class="step-section" id="step3">
+      <div class="section-card">
+        <h2 class="section-title">
+          <span class="title-icon">[+]</span> 选择源服务器数据
+        </h2>
+
+        <!-- servers.dat info -->
+        <div class="info-panel" id="serversDatPanel" style="display:none;">
+          <h3 class="panel-title">服务器列表 (servers.dat)</h3>
+          <div class="server-list" id="serverList"></div>
+        </div>
+
+        <!-- JourneyMap folders -->
+        <div class="layer-section">
+          <h3 class="layer-title">
+            <span class="layer-badge">JM</span> JourneyMap 服务器文件夹
+          </h3>
+          <div class="card-grid" id="jmServerGrid">
+            <div class="loading-spinner"></div>
+          </div>
+        </div>
+
+        <div class="step-actions">
+          <button class="pixel-btn pixel-btn-stone" id="step3Back">上一步</button>
+          <button class="pixel-btn pixel-btn-green" id="step3Next" disabled>下一步</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 4: Select Target + Transfer -->
+    <section class="step-section" id="step4">
+      <div class="section-card">
+        <h2 class="section-title">
+          <span class="title-icon">[+]</span> 选择目标并执行转移
+        </h2>
+
+        <!-- Source summary -->
+        <div class="info-panel" id="sourceSummary">
+          <!-- Populated by JS -->
+        </div>
+
+        <!-- Target selection -->
+        <div class="layer-section">
+          <h3 class="layer-title">
+            <span class="layer-badge">-></span> 选择目标文件夹
+          </h3>
+
+          <div class="target-tabs">
+            <button class="tab-btn active" data-tab="existing">现有文件夹</button>
+            <button class="tab-btn" data-tab="servers">从服务器列表</button>
+            <button class="tab-btn" data-tab="custom">手动输入</button>
+          </div>
+
+          <div class="tab-content active" id="tab-existing">
+            <div class="card-grid" id="targetExistingGrid"></div>
+          </div>
+
+          <div class="tab-content" id="tab-servers">
+            <div class="server-list" id="targetServerList"></div>
+          </div>
+
+          <div class="tab-content" id="tab-custom">
+            <div class="input-row">
+              <input type="text" class="pixel-input" id="customTargetInput" placeholder="输入新文件夹名称">
+              <button class="pixel-btn pixel-btn-green" id="customTargetBtn">确认</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Transfer options -->
+        <div class="layer-section">
+          <h3 class="layer-title">
+            <span class="layer-badge">!!</span> 操作设置
+          </h3>
+          <div class="option-group">
+            <label class="pixel-radio">
+              <input type="radio" name="transferMode" value="copy" checked>
+              <span class="radio-label">复制 (保留源数据)</span>
+            </label>
+            <label class="pixel-radio">
+              <input type="radio" name="transferMode" value="move">
+              <span class="radio-label">移动 (删除源数据)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Progress area -->
+        <div class="progress-area" id="progressArea" style="display:none;">
+          <div class="progress-bar-container">
+            <div class="progress-bar-fill" id="progressBar"></div>
+            <span class="progress-text" id="progressText">0%</span>
+          </div>
+          <div class="progress-details" id="progressDetails"></div>
+        </div>
+
+        <div class="step-actions">
+          <button class="pixel-btn pixel-btn-stone" id="step4Back">上一步</button>
+          <button class="pixel-btn pixel-btn-yellow" id="startTransferBtn">开始转移</button>
+          <button class="pixel-btn pixel-btn-red" id="cancelTransferBtn" style="display:none;">取消</button>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Toast container -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Modal container -->
+  <div class="modal-overlay" id="modalOverlay" style="display:none;">
+    <div class="modal-content" id="modalContent"></div>
+  </div>
+
+  <script src="/js/api.js"></script>
+  <script src="/js/ui.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>
